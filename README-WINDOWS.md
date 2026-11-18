@@ -7,8 +7,8 @@ Este procedimento gera `build\\negxusos.img` diretamente no Windows 7, sem GNU M
 Recomendado: Windows 7 SP1 de 64 bits.
 
 1. **Python 3.8.x**. O Python 3.8 e a ultima linha que suporta Windows 7.
-2. **Pillow 10.4.0**. Depois de instalar Python, abra o Prompt de Comando e execute:
-   `python -m pip install Pillow==10.4.0`
+2. **Pillow 7.0.0**. Essa versao tem wheel CPython 3.8 para Windows e aparece como versao testada no Windows 7. Depois de instalar Python, abra o Prompt de Comando e execute:
+   `python -m pip install Pillow==7.0.0`
 3. **NASM para Windows**: baixe em https://www.nasm.us/ e adicione a pasta que contem `nasm.exe` ao PATH.
 4. **Cross-compiler x86_64-elf**. O projeto precisa de ferramentas que gerem objetos ELF para o kernel. O GCC normal do MinGW gera executaveis Windows (PE) e nao substitui essa toolchain.
 
