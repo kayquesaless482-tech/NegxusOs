@@ -1,8 +1,9 @@
 # NegxusOS
 
 Sistema operacional experimental para x86-64, escrito do zero em C e assembly, sem Linux e sem
-nenhum código de outro sistema. Roda a partir de uma imagem de disco (`.img`) gravada em pendrive
-ou testada no QEMU.
+nenhum código de outro sistema. Roda a partir de uma imagem de disco (`.img`) no QEMU com disco IDE.
+O bootloader Legacy BIOS pode iniciar a imagem gravada em pendrive, mas esta versão ainda não tem
+driver USB Mass Storage: os arquivos persistentes dependem do volume NegxusOS FAT16 no ATA primário/master.
 
 Status: **versão 1.0 de teste**. Testado apenas no QEMU. Ainda não foi validado em hardware real.
 
