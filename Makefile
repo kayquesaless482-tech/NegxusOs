@@ -36,7 +36,7 @@ $(B)/negxusos.img: $(B)/kernel.bin boot/mbr.asm boot/stage2.asm tools/mkimage.py
 	python3 tools/mkimage.py
 
 run: all
-	qemu-system-x86_64 -m 512 -drive format=raw,file=$(B)/negxusos.img -nic user,model=e1000 -serial stdio
+	qemu-system-x86_64 -m 512 -drive format=raw,file=$(B)/negxusos.img,if=ide,index=0 -nic user,model=e1000 -serial stdio
 
 clean:
 	rm -rf $(B)

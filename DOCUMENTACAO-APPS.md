@@ -19,7 +19,7 @@ Não implementado nesta versão:
   (PRM) e testes em hardware real. Não foi feito, e um driver sem isso poderia travar a máquina.
 - Execução em anel 3 (apps rodam no mesmo espaço de endereços do kernel).
 - Rede, navegador, bloco de notas, gerenciador de tarefas, Doom, camada para `.exe`.
-- Sistemas de arquivos exFAT, FAT32 e NTFS (hoje só existe um sistema em RAM).
+- FAT16 persistente implementado com driver ATA PIO (canal primário/master). FAT32, exFAT e NTFS ainda não são suportados; USB Mass Storage também não.
 - Gamepad USB e pilha USB, instalador e live boot persistente.
 
 Teste em hardware real: NÃO feito. Só foi testado no QEMU.
@@ -37,13 +37,15 @@ clique esquerdo quebrar, clique direito colocar. Não há gravidade nem colisão
 - kernel/mem.c: heap first-fit, com etiqueta de dono (cada app tem sua etiqueta, liberada junto).
 - kernel/gfx.c: canvas 32 bits, retângulos, texto antialiased, ícones, blit.
 - kernel/input.c: teclado PS/2 (layout ABNT2) e mouse PS/2 (com roda).
-- kernel/fs.c: sistema de arquivos em RAM, carregado do initrd (formato NXAR).
+- kernel/disk.c: driver ATA PIO LBA28 para o dispositivo master do canal IDE primário.
+- kernel/fs.c: FAT16 persistente com nomes longos VFAT; importa os aplicativos do initrd NXAR no primeiro boot.
 - kernel/wm.c: janelas, foco, arrastar, redimensionar, eventos e repintura.
 - kernel/desktop.c: papel de parede, barra de tarefas, menu Iniciar, ícones, cursor.
 - kernel/nxe.c: carregador de .nxe (relocações) e tabela de API para os apps.
 - apps/*.c: aplicativos, cada um compilado como .nxe independente.
 - tools/mkinitrd.py: compila os apps, gera ícones e monta o initrd.
-- tools/mkimage.py: monta a imagem de disco final.
+- tools/mkimage.py: monta a imagem de disco MBR com partição FAT16 de 64 MiB.
+- tools/build_windows.py e build-windows.bat: compilação da imagem no Windows 7.
 
 ## 1a-2. Anel 3 (modo usuário)
 
@@ -75,6 +77,8 @@ O que falta para os apps rodarem em anel 3:
   parcial).
 
 
+No Windows 7, veja `README-WINDOWS.md` e execute `build-windows.bat`.
+
 ## 2. Compilar o sistema
 
 Requisitos (Ubuntu/Debian): `sudo apt install gcc nasm binutils python3 python3-pil qemu-system-x86`
@@ -88,7 +92,7 @@ O `Makefile` faz, nesta ordem: compila o kernel (`kernel/*.c`, `kernel/*.asm`), 
 aplicativos (`apps/*.c`) e gera os ícones (`tools/mkinitrd.py`), monta o initrd, e monta a imagem
 de disco (`tools/mkimage.py`) com o bootloader (`boot/mbr.asm`, `boot/stage2.asm`).
 
-Para testar no QEMU: `qemu-system-x86_64 -m 512 -drive format=raw,file=build/negxusos.img`
+Para testar no QEMU: `qemu-system-x86_64 -m 512 -drive file=build/negxusos.img,format=raw,if=ide,index=0`
 
 ## 3. Transformar em .img e gravar em pendrive
 
@@ -100,8 +104,7 @@ A imagem `negxusos.img` já é um disco completo (MBR + bootloader + kernel). Pa
 - Windows: use o Rufus, selecione a imagem e escolha o modo "Imagem DD" (não "ISO")
 - Teste: escolha o pendrive como primeiro dispositivo de boot na BIOS/UEFI (modo Legacy/CSM)
 
-Observação: a imagem é de 1 MiB. Ela inicia em BIOS Legacy. Em UEFI puro pode não iniciar
-(esse bootloader não tem suporte a UEFI).
+Observação: a imagem contém o MBR, o kernel e uma partição FAT16 de 64 MiB. Ela inicia em BIOS Legacy. Em UEFI puro pode não iniciar (esse bootloader não tem suporte a UEFI). O boot pelo pendrive pode carregar o kernel, mas o kernel ainda não possui driver USB Mass Storage; nesse caso a partição do pendrive não fica disponível aos aplicativos.
 
 ## 4. Criar aplicativos (.nxe)
 
@@ -232,7 +235,7 @@ texto ou de interface.
 
 ```
 boot/        bootloader (MBR e estágio 2)
-kernel/      kernel: arch, memória, gráficos, entrada, sistema de arquivos,
+kernel/      kernel: arch, disco ATA, memória, gráficos, entrada, FAT16,
              janelas (wm), área de trabalho (desktop), carregador de .nxe (nxe), main
 common/      libc mínima (str.c)
 sdk/         contrato com os apps

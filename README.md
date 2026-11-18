@@ -1,8 +1,9 @@
 # NegxusOS
 
 Sistema operacional experimental para x86-64, escrito do zero em C e assembly, sem Linux e sem
-nenhum código de outro sistema. Roda a partir de uma imagem de disco (`.img`) gravada em pendrive
-ou testada no QEMU.
+nenhum código de outro sistema. Roda a partir de uma imagem de disco (`.img`) no QEMU com disco IDE.
+O bootloader Legacy BIOS pode iniciar a imagem gravada em pendrive, mas esta versão ainda não tem
+driver USB Mass Storage: os arquivos persistentes dependem do volume NegxusOS FAT16 no ATA primário/master.
 
 Status: **versão 1.0 de teste**. Testado apenas no QEMU. Ainda não foi validado em hardware real.
 
@@ -14,6 +15,7 @@ Status: **versão 1.0 de teste**. Testado apenas no QEMU. Ainda não foi validad
   barra de título clara
 - Troca de papel de parede (app **Personalizar**)
 - Explorador de Arquivos com colunas Nome, Tipo e Tamanho
+- Sistema de arquivos FAT16 persistente, com nomes longos VFAT e leitura/escrita no disco (driver ATA PIO primário/master)
 - Terminal com comandos internos (`help`, `ls`, `cd`, `cat`, `mkdir`, `echo`, `date`)
 - **Cubos**: jogo de blocos em 3D real (triângulos com perspectiva e z-buffer)
 - Cobrinha, Campo Minado e Paint (salva desenhos em `.npt`)
@@ -30,7 +32,7 @@ Status: **versão 1.0 de teste**. Testado apenas no QEMU. Ainda não foi validad
 - Apps em anel 3: o kernel já suporta anel 3 (segmentos de usuário, TSS, porta de syscall `int 0x80`,
   página de usuário e retorno ao kernel). Um teste de anel 3 roda no boot e imprime `RI` na serial.
   Os aplicativos ainda rodam em anel 0 (mesmo espaço de endereços do kernel).
-- Sistemas de arquivos exFAT, FAT32 e NTFS (existe só um sistema em RAM).
+- FAT32, exFAT e NTFS ainda não são suportados. O FAT16 usa ATA PIO no canal primário/master; USB Mass Storage ainda não está implementado.
 - Gamepad USB, instalador e live boot persistente (a escolha instalar/live ainda não existe).
 - UEFI puro (só BIOS Legacy).
 
@@ -46,7 +48,7 @@ O resultado é `build/negxusos.img`.
 ## Como testar
 
 ```
-qemu-system-x86_64 -m 512 -drive format=raw,file=build/negxusos.img
+qemu-system-x86_64 -m 512 -drive file=build/negxusos.img,format=raw,if=ide,index=0
 ```
 
 ## Como gravar em pendrive
@@ -57,6 +59,10 @@ Confira o nome do dispositivo antes (`lsblk`). Gravar apaga o pendrive inteiro.
 - Windows: Rufus, modo "Imagem DD"
 
 Inicie em modo Legacy/CSM na BIOS.
+
+## Compilar no Windows 7
+
+Consulte `README-WINDOWS.md` e execute `build-windows.bat`. É necessária uma cross-toolchain `x86_64-elf`, Python 3.8, Pillow e NASM.
 
 ## Documentação
 

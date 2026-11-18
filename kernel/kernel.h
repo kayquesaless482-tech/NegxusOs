@@ -40,6 +40,11 @@ typedef struct {
 } regs_t;
 extern volatile u32 g_ticks;                 /* ms desde o boot */
 void serial_init(void);
+int disk_init(void);
+int disk_read(u32 lba, u32 count, void *buffer);
+int disk_write(u32 lba, u32 count, const void *buffer);
+u32 disk_sector_count(void);
+int disk_is_ready(void);
 void kputs(const char *s);
 void kprintf(const char *fmt, ...);
 void arch_init(void);
@@ -110,7 +115,7 @@ void input_init(void);
 int  input_next(event_t *e);
 extern int g_kbd_dead;
 
-/* ---------------- arquivos (ramfs) ---------------- */
+/* ---------------- arquivos (FAT16 persistente) ---------------- */
 void fs_init(void);
 int  fs_read(const char *path, void *buf, int max);
 int  fs_write(const char *path, const void *buf, int n);
