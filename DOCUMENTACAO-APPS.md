@@ -104,7 +104,7 @@ A imagem `negxusos.img` já é um disco completo (MBR + bootloader + kernel). Pa
 - Windows: use o Rufus, selecione a imagem e escolha o modo "Imagem DD" (não "ISO")
 - Teste: escolha o pendrive como primeiro dispositivo de boot na BIOS/UEFI (modo Legacy/CSM)
 
-Observação: a imagem contém o MBR, o kernel e uma partição FAT16 de 64 MiB. Ela inicia em BIOS Legacy. Em UEFI puro pode não iniciar (esse bootloader não tem suporte a UEFI).
+Observação: a imagem contém o MBR, o kernel e uma partição FAT16 de 64 MiB. Ela inicia em BIOS Legacy. Em UEFI puro pode não iniciar (esse bootloader não tem suporte a UEFI). O boot pelo pendrive pode carregar o kernel, mas o kernel ainda não possui driver USB Mass Storage; nesse caso a partição do pendrive não fica disponível aos aplicativos.
 
 ## 4. Criar aplicativos (.nxe)
 
