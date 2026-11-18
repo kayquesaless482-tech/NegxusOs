@@ -652,6 +652,14 @@ static int fat16_mount(void) {
         part_sectors > disk_sector_count() - part_lba) return -1;
     u8 bpb[512] __attribute__((aligned(2)));
     if (disk_read(part_lba, 1, bpb) != 0 || bpb[510] != 0x55 || bpb[511] != 0xAA) return -1;
+    /* Nao montar uma particao FAT16 qualquer do HD do computador. A imagem
+       NegxusOS grava um serial e um rotulo exclusivos no seu proprio volume. */
+    if (rd32(bpb + 39) != 0x4E475853 ||
+        memcmp(bpb + 43, "NEGXUSOS   ", 11) != 0 ||
+        memcmp(bpb + 54, "FAT16   ", 8) != 0) {
+        kprintf("[fs] particao FAT16 encontrada, mas nao pertence ao NegxusOS\n");
+        return -1;
+    }
     if (rd16(bpb + 11) != 512) return -1;
     sectors_per_cluster = bpb[13];
     u32 reserved = rd16(bpb + 14);
