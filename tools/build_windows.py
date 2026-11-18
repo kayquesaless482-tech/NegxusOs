@@ -59,6 +59,8 @@ def main():
     env["OBJCOPY"] = OBJCOPY
     env["NASM"] = NASM
     env["PYTHON"] = PYTHON
+    env.setdefault("NM", "x86_64-elf-nm")
+    env.setdefault("READELF", "x86_64-elf-readelf")
 
     run([PYTHON, "tools/mkinitrd.py", "build/initrd.bin"], env=env)
 
