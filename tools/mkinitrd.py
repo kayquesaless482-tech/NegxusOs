@@ -5,6 +5,11 @@ import os, struct, subprocess, sys
 from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+CC = os.environ.get("CC", "gcc")
+LD = os.environ.get("LD", "ld")
+OBJCOPY = os.environ.get("OBJCOPY", "objcopy")
+NM = os.environ.get("NM", "nm")
+READELF = os.environ.get("READELF", "readelf")
 os.chdir(ROOT)
 OUT = sys.argv[1] if len(sys.argv) > 1 else "build/initrd.bin"
 APPDIR = "build/apps"
@@ -99,14 +104,14 @@ def build_app(name, fname, flags, order, icon):
     objs = []
     for src in ["sdk/app_rt.c", "common/str.c", "apps/%s.c" % fname]:
         o = os.path.join(APPDIR, os.path.basename(src).replace(".c", "_%s.o" % fname))
-        run(["gcc"] + CFLAGS + ["-c", src, "-o", o])
+        run([CC] + CFLAGS + ["-c", src, "-o", o])
         objs.append(o)
     elf = os.path.join(APPDIR, fname + ".elf")
-    run(["ld", "-T", "sdk/crt.ld", "--emit-relocs", "-static", "-nostdlib", "-o", elf] + objs)
+    run([LD, "-T", "sdk/crt.ld", "--emit-relocs", "-static", "-nostdlib", "-o", elf] + objs)
     img = os.path.join(APPDIR, fname + ".bin")
-    run(["objcopy", "-O", "binary", "-j", ".image", elf, img])
+    run([OBJCOPY, "-O", "binary", "-j", ".image", elf, img])
     image = open(img, "rb").read()
-    nm = subprocess.check_output(["nm", elf]).decode()
+    nm = subprocess.check_output([NM, elf]).decode()
     entry = end = None
     for line in nm.splitlines():
         parts = line.split()
@@ -114,7 +119,7 @@ def build_app(name, fname, flags, order, icon):
         if len(parts) == 3 and parts[2] == "__nx_end": end = int(parts[0], 16)
     assert entry is not None and end is not None, "simbolos ausentes em " + fname
     rel = []
-    for line in subprocess.check_output(["readelf", "-rW", elf]).decode().splitlines():
+    for line in subprocess.check_output([READELF, "-rW", elf]).decode().splitlines():
         if "R_X86_64_64" in line and "Offset" not in line:
             rel.append(int(line.split()[0], 16))
     relb = b"".join(struct.pack("<I", r) for r in rel)
