@@ -61,7 +61,7 @@ goto failed
 echo ERRO: Python nao encontrado.
 goto failed
 :no_pillow
-echo ERRO: Pillow ausente. Execute: python -m pip install Pillow==10.4.0
+echo ERRO: Pillow ausente. Execute: python -m pip install Pillow==7.0.0
 goto failed
 :failed
 echo.
